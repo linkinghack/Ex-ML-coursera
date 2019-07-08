@@ -62,23 +62,53 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+% 准备分类结果->置信度矩阵
+Y = zeros(m, num_labels);
+for i = 1:m
+    Y(i, y(i)) = 1;
+end
+%----------前向传播----------------
+a1 = [ones(m,1) X];
+z2 = a1 * Theta1';
+a2 = sigmoid(z2);
+a2 = [ones(size(a2, 1), 1) a2]; % 添加偏置项
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);
 
+% hidden = sigmoid([ones(m, 1) X] * Theta1');  % 不用Theta * X 的方式，以保留正确的矩阵形状
+% output = sigmoid([ones(size(hidden, 1), 1) hidden] * Theta2'); % output 每一行是一个样本对所有类别的置信度
 
+%---------损失函数-----------------
+J = (-1/m) * sum(( Y .* log(a3) + (1 - Y) .* log(1 - a3)), 'all');
+regular = (lambda/(2*m)) * (sum(Theta1(:, 2:end).^2, 'all') + sum(Theta2(:, 2:end).^2, 'all'));
+J = J+regular;
 
+%--------反向传播求偏导------------
+for i = 1:m
+%     a_1 = [1; X(i, :)'];
+%     z_2 = Theta1 * a_1;
+%     a_2 = sigmoid(z_2);
+%     a_2 = [1; a_2];
+%     z_3 = Theta2 * a_2;
+%     a_3 = sigmoid(z_3);
+    a_3 = a3(i, :)';
+    z_2 = z2(i, :)';
+    a_2 = a2(i, :)';
+    a_1 = a1(i, :)';
+    Yi = Y(i, :)';
+    
+    delta3 = a_3 - Yi;
+    delta2 = (Theta2' * delta3);
+    delta2 = delta2(2:end); 
+    delta2 = delta2  .* sigmoidGradient(z_2);
+    Theta2_grad = Theta2_grad + (delta3 * a_2');
+    Theta1_grad = Theta1_grad + (delta2 * a_1');
+end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Theta1_grad = Theta1_grad ./ m;
+Theta2_grad = Theta2_grad ./ m;
+Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + ((lambda/m) .* Theta1(:, 2:end));
+Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + ((lambda/m) .* Theta2(:, 2:end));
 
 % -------------------------------------------------------------
 
