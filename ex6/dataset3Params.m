@@ -23,11 +23,22 @@ sigma = 0.3;
 %        mean(double(predictions ~= yval))
 %
 
+minErrorRate = 100;
 
+suggestParameters = [0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30];
 
-
-
-
+for tempC = suggestParameters
+    for tempSig = suggestParameters
+        tempModel =  svmTrain(X, y, tempC, @(x1, x2) gaussianKernel(x1, x2, tempSig));
+        predictions = svmPredict(tempModel, Xval);
+        tempErr = mean(double(predictions ~= yval));
+        if (tempErr < minErrorRate)
+            minErrorRate = tempErr;
+            C = tempC;
+            sigma = tempSig;
+        end
+    end
+end
 
 % =========================================================================
 
