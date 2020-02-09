@@ -21,7 +21,7 @@ grad = zeros(size(theta));
 
 H = X * theta;
 
-J = (1/(2*m)) * ( sum((H - y).^2) + lambda * sum( theta(2:length(theta)) ).^2); % 不对theta(1) 正则化
+J = (1/(2*m)) * ( sum((H - y).^2) + lambda * (theta' * theta - theta(1)^2)); % 不对theta(1) 正则化
 
 grad = 1/m .* ( sum( X .* (H - y)) + lambda .* theta' );
 grad(1) = sum( X(:,1) .* (H - y)) / m; % 单独计算theta(1)的偏导数（不含正则项的导数）
